@@ -2,19 +2,21 @@
   <div class="home">
     <p style="font-size: 20px; font-weight: bold">大声朗读</p>
     <p style="margin-bottom: 30px; color: #999">
-      基于微软edge浏览器大声朗读功能开发的pwa应用
+      使用 Edge 浏览器效果更佳
     </p>
     <a-textarea
       placeholder="输入需要朗读的文字"
       :value="inputText"
       @input="onInput"
       class="a-textarea"
+      allowClear
       :rows="10"
     >
     </a-textarea>
 
     <div class="controls">
-      <a-button type="primary" @click="play">播放</a-button>
+      <a-button type="primary" @click="play" size="large">播放</a-button>
+      <a-button type="primary" @click="pasteAndPlay" size="large">粘贴并播放</a-button>
       <a-button type="primary" @click="pause" v-if="status !== '暂停'">暂停</a-button>
       <a-button type="primary" @click="resume" v-else>恢复</a-button>
       <div class="status">
@@ -188,7 +190,9 @@ export default {
       this.selectRateIndex = index;
     },
     play() {
-      this.stop()
+      if (synth.speaking) {
+        synth.cancel();
+      }
       const isZh = isContainChinese(this.inputText);
       this.selectIdx = isZh ? 0 : 1
 
@@ -206,6 +210,17 @@ export default {
       console.log(utterThis)
       synth.speak(utterThis);
       this.handleVoiceEvent(utterThis)
+    },
+    pasteAndPlay() {
+      navigator.clipboard
+        .readText()
+        .then((v) => {
+          this.inputText = v;
+          this.play()
+        })
+        .catch(() => {
+          this.$message('请授权剪贴板权限')
+        });
     },
     handleVoiceEvent(utterThis) {
       utterThis.onstart = () => {
@@ -283,10 +298,13 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss">
 .a-textarea {
-  box-shadow: inset 0px 1px 4px #ececec;
-  color: #000;
+  height: 40vh;
+  .ant-input {
+    color: #000;
+    height: 100%;
+  }
 }
 .ant-slider-handle {
   background-color: #999 !important;
@@ -317,8 +335,5 @@ export default {
 .status {
   display: flex;
   align-items: center;
-}
-.a-textarea {
-  height: 40vh;
 }
 </style>
