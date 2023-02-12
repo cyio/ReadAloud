@@ -1,15 +1,9 @@
 <template>
   <div class="home">
-    <!-- <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="第一个wpa应用"/> -->
     <p style="font-size: 20px; font-weight: bold">大声朗读</p>
     <p style="margin-bottom: 30px; color: #999">
       基于微软edge浏览器大声朗读功能开发的pwa应用
     </p>
-    <!-- <textarea name="" id="" v-model="value" cols="30" rows="10"></textarea> -->
-    <!-- <input id="rate" class="flex-fill" type="range" min="0.5" max="1.5" value="1" step="0.01"> -->
-    <!-- <select id="voiceSelect" class="col-9"></select> -->
-    <!-- <button id="play" @click="onClick">播放</button> -->
     <a-textarea
       placeholder="输入需要朗读的文字"
       :value="inputText"
@@ -19,60 +13,58 @@
     >
     </a-textarea>
 
-    <p class="text-lf pb5 fweight-bold letter2 pl5 mt30">选择语音</p>
-    <a-row type="flex" justify="space-between" align="middle">
-      <a-col :span="18">
-        <a-select
-          @select="onSelect"
-          :default-value="defaultSelect"
-          style="width: 100%"
-          >
-            <a-select-option v-for="(item, index) in voices" :key="index">
-              {{ item.displayName }}
-            </a-select-option>
-        </a-select>
-      </a-col>
-      <a-col :span="5">
-        <a-button type="primary" @click="onClick">播放</a-button>
-        <!-- <a-button type="primary" @click="test">恢复</a-button> -->
-        <!-- <a-button type="primary" @click="voiceResume">暂停</a-button> -->
+    <div class="controls">
+      <a-button type="primary" @click="play">播放</a-button>
+      <a-button type="primary" @click="pause" v-if="status !== '暂停'">暂停</a-button>
+      <a-button type="primary" @click="resume" v-else>恢复</a-button>
+      <div class="status">
+        播放状态：
+        <a-spin v-if="status === '播放中'" />
+        <span v-else>{{status}}</span>
+      </div>
+    </div>
 
+    <div class="row-voice" v-if="0">
+      <p class="text-lf pb5 fweight-bold letter2 pl5 mt30">选择语音</p>
+      <a-row type="flex" justify="space-between" align="middle">
+        <a-col :span="15">
+          <a-select
+            @select="onSelect"
+            :default-value="defaultSelect"
+            style="width: 100%"
+            >
+              <a-select-option v-for="(item, index) in voices" :key="index" :value="index">
+                {{ item.name }}
+              </a-select-option>
+          </a-select>
+        </a-col>
+        <!-- <a-col :span="3">
+          <a-switch default-checked checked-children="录" un-checked-children="" @change="onChange" />
+        </a-col> -->
+      </a-row>
+    </div>
 
-      </a-col>
-      <!-- <a-col :span="3">
-        <a-switch default-checked checked-children="录" un-checked-children="" @change="onChange" />
-      </a-col> -->
-    </a-row>
+    <div class="row-rate">
+      <div class="text-lf">
+        <span class="fweight-bold letter2 pl5">播放速度(rate)</span>
+      </div>
+      <a-select
+        @select="onSelectRateIndex"
+        :default-value="defaultselectRateIndex"
+        >
+          <a-select-option v-for="(item, index) in rates" :key="index">
+            {{ item }}
+          </a-select-option>
+      </a-select>
+    </div>
 
-    <a-row type="flex" justify="space-between" align="middle" class="pb5 pt10 mt20">
-      <a-col :span="24">
-        <div class="text-lf">
-          <span class="fweight-bold letter2 pl5">播放速度(rate)</span>
-          <span class="letter2 pl10" style="color:#999;font-size:12px">{{rateValue}} 倍速</span>
-        </div>
-        <div style="padding-left: 10px" touch-action="none">
-          <a-slider
-            :marks="rateMarks"
-            :step="0.25"
-            :min="minRate"
-            :max="maxRate"
-            @change="onRateSlider"
-            :included="false"
-            :default-value="rateValue"
-          />
-          <!-- <RedoOutlined /> -->
-        </div>
-      </a-col>
-    </a-row>
-
-    <a-row type="flex" justify="space-between" align="middle" class="pb5 pt20">
+    <a-row type="flex" justify="space-between" align="middle" class="pb5 pt20" v-if="0">
       <a-col :span="24">
         <div class="text-lf">
           <span class="text-lf fweight-bold letter2 pl5">音调调整(pitch)</span>
           <span class="letter2 pl10" style="color:#999;font-size:12px">当前{{pitchValue}}</span>
         </div>
         
-        <!-- <a-slider id="test" v-model="value1" :disabled="disabled" /> -->
         <div style="padding-left: 10px" touch-action="none">
           <a-slider
             :marks="pitchMarks"
@@ -87,60 +79,28 @@
       </a-col>
     </a-row>
 
-    <a-row type="flex" justify="space-between" align="middle" class="pb10">
+    <a-row type="flex" justify="space-between" align="middle" class="pb10" v-if="0">
       <a-col class="flex-wrap">
         <p class="text-lf fweight-bold letter2 pl5 pb10" style="margin-right:10px;">开启录音(record)</p>
         <a-switch :checked="recordStatus" @change="onChange" />
       </a-col>
     </a-row>
-    <p class="link" @click="push">Github中查看</p>
+    <!-- <p class="link" @click="push">Github中查看</p> -->
   </div>
 </template>
-<style scoped>
-.a-textarea {
-  box-shadow: inset 0px 1px 4px #ececec;
-  -moz-box-shadow: inset 0px 1px 10px #ececec;
-  -webkit-box-shadow: inset 0px 1px 10px #ececec;
-}
-.ant-slider-handle {
-  background-color: #999 !important;
-  border: solid 4px #333 !important;
-}
-.link{
-  font-size: 14px;
-  margin-top:40px;
-  color: #999;
-  letter-spacing: 1px;
-}
-</style>
 
 <script>
 // @ is an alias to /src
 // import HelloWorld from '@/components/HelloWorld.vue'
-// import { Button, Slider, Select } from 'ant-design-vue';
+import {isContainChinese} from '@/utils/';
 
-var synth = window.speechSynthesis;
-var matches;
-var utterThis;
-
-
-// if (navigator.serviceWorker) {
-//   navigator.serviceWorker.register('./sw.js')
-//   .then(resolve =>{
-//     console.log('⛳️ -> sw注册成功!');
-//   }, reject => {
-//     console.log(reject)
-//   })
-
-// }
-
+const synth = window.speechSynthesis;
+window.synth = synth
+let utterThis;
 
 export default {
   name: "Home",
   components: {
-    // AButton: Button,
-    // ASlider: Slider,
-    // ASelect: Select
   },
   data() {
     return {
@@ -148,24 +108,9 @@ export default {
       value: "",
       value1: 20,
       disabled: false,
-      defaultSelect: "选择朗读语言类型",
-      speedSelect: "x1",
-      inputText: "",
+      defaultSelect: '选择最佳语音',
+      inputText: '这是示例文本 hello world',
       selectIdx: 0,
-
-      // 语音倍速
-      rateValue: 1,
-      minRate: 0.5,
-      maxRate: 2,
-      rateMarks: {
-        0.5: "缓慢",
-        0.75: "",
-        1: "常规",
-        1.25: "",
-        1.5: "",
-        1.75: "",
-        2: "快",
-      },
 
       // 音调高低
       pitchValue: 1,
@@ -175,7 +120,14 @@ export default {
         0: "",
         2: "",
       },
-      recordStatus: false
+      recordStatus: false,
+      isPaused: true,
+      status: '',
+
+      // rates
+      rates: [0.75, 1, 1.25, 1.5, 2],
+      selectRateIndex: 1,
+      defaultselectRateIndex: 1
     };
   },
   created() {},
@@ -183,8 +135,6 @@ export default {
   mounted() {
     this.populateVoiceList();
     this.checkBrowser();
-    
-    
   },
   updated() {},
   beforeDestroy() {},
@@ -194,7 +144,7 @@ export default {
       if (typeof speechSynthesis === "undefined") {
         return;
       }
-      new Promise((resolve, reject) => {
+      new Promise((resolve) => {
         setTimeout(() => {
           let voices = speechSynthesis.getVoices();
           // console.log(voices)
@@ -203,26 +153,10 @@ export default {
         }, 0);
       }).then((voices) => {
         this.voices = voices
-          // .filter((c) => {
-          //   return /^(Microsoft|Google) /.test(c.name);
-          // })
-          .map((c) => {
-              // console.log(c)
-
-            if (c.name.startsWith("Google ")) {
-              c.displayName = c.name.replace(/^Google /, "");
-            } else if (c.name.startsWith("Microsoft")) {
-           
-              matches = c.name.match(/^Microsoft (.+) Online.*- (.+)/);
-              // c.displayName = `${matches[2]} - ${matches[1]}`;
-              c.displayName = c.name
-            } else {
-              c.displayName = c.name;
-            }
-            return c;
-          })
-          .sort(function (a, b) {
-            return a.displayName.localeCompare(b.displayName);
+          .filter(i => {
+            // console.log(i)
+            return /Jenny|Xiaoxiao/.test(i.name)
+            // return i.lang === 'zh-CN' || i.lang === 'en-US' && i.displayName.includes('Natural')
           });
       });
     },
@@ -235,37 +169,69 @@ export default {
         return;
       }
       this.speak();
+      this.isPaused = false;
+    },
+    handleMenuClick(e) {
+      console.log('click', e);
+    },
+    onPause() {
+      synth.pause();
+      this.isPaused = true;
     },
     onInput(e) {
       this.inputText = e.target.value;
     },
-    // select 选中
     onSelect(index) {
       this.selectIdx = index;
     },
-    speak() {
-      
+    onSelectRateIndex(index) {
+      this.selectRateIndex = index;
+    },
+    play() {
+      this.stop()
+      const isZh = isContainChinese(this.inputText);
+      this.selectIdx = isZh ? 0 : 1
+
       let { 
         voices, 
         selectIdx, 
         inputText, 
-        rateValue,
+        selectRateIndex,
         pitchValue 
       } = this;
       utterThis = new SpeechSynthesisUtterance(inputText);
-      utterThis.onend = function (event) {
-      console.log("SpeechSynthesisUtterance.onend");
-        
-        // play.textContent = '► Play'
-      };
-
-      utterThis.onerror = function (event) {
-        console.error("SpeechSynthesisUtterance.onerror");
-      };
       utterThis.voice = voices[selectIdx]; // 设置说话的声音
       utterThis.pitch = pitchValue; // 设置音调高低
-      utterThis.rate = rateValue; // 设置说话的速度
+      utterThis.rate = this.rates[selectRateIndex]; // 设置说话的速度
+      console.log(utterThis)
       synth.speak(utterThis);
+      this.handleVoiceEvent(utterThis)
+    },
+    handleVoiceEvent(utterThis) {
+      utterThis.onstart = () => {
+        this.status = "播放中";
+      };
+      utterThis.onpause = () => {
+        this.status = "暂停";
+      };
+      utterThis.onresume = () => {
+        this.status = "播放中";
+      };
+      utterThis.onend = () => {
+        this.status = "播放结束";
+      };
+      utterThis.onerror = (error) => {
+        console.error('Synthesis 实例异常', error)
+      };
+    },
+    pause() {
+      synth.pause();
+    },
+    resume() {
+      synth.resume();
+    },
+    stop() {
+      synth.cancel();
     },
     onChange(value) {
       console.log("change: ", value);
@@ -278,10 +244,6 @@ export default {
     onAfterChange(value) {
       console.log("afterChange: ", value);
     },
-    // 改变语音速度
-    onRateSlider(e) {
-      this.rateValue = e
-    },
     // 改变音调高低
     onPitchSlider(e) {
       this.pitchValue = e
@@ -289,11 +251,6 @@ export default {
     checkBrowser() {
       // console.log('userAgent: '+window.navigator.userAgent)
     },
-    // 跳转至 github仓库地址
-    push() {
-      window.location.href="https://github.com/guozhigq/ReadAloud"
-    },
-
     // 新建 MediaRecorder对象
     initRecorder() {
       const _this = this
@@ -325,3 +282,43 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.a-textarea {
+  box-shadow: inset 0px 1px 4px #ececec;
+  color: #000;
+}
+.ant-slider-handle {
+  background-color: #999 !important;
+  border: solid 4px #333 !important;
+}
+.link{
+  font-size: 14px;
+  margin-top: 140px;
+  color: #999;
+  letter-spacing: 1px;
+}
+.controls {
+  margin-top: 30px;
+  display: flex;
+}
+.controls .ant-btn {
+  margin-right: 30px;
+}
+.row-rate {
+  margin-top: 25px;
+  display: flex;
+  align-items: center;
+}
+.row-rate .ant-select {
+  width: 70px;
+  margin-left: 15px;
+}
+.status {
+  display: flex;
+  align-items: center;
+}
+.a-textarea {
+  height: 40vh;
+}
+</style>

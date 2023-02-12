@@ -15,7 +15,10 @@ import {
   Input,
   Row,
   Col,
-  Switch
+  Switch,
+  Dropdown,
+  Menu,
+  Spin
 } from 'ant-design-vue';
 
 Vue.config.productionTip = false
@@ -26,6 +29,9 @@ Vue.use(Input);
 Vue.use(Row);
 Vue.use(Col);
 Vue.use(Switch)
+Vue.use(Dropdown)
+Vue.use(Menu)
+Vue.use(Spin)
 
 // Vue.use(RedoOutlined)
 
